@@ -1,0 +1,67 @@
+// This is your Prisma schema file, where you define the structure of your database 
+// and the relations between its tables/models.
+
+// Learn more about Prisma schemas in the official documentation: https://pris.ly/d/prisma-schema
+
+// Prisma Accelerate can help improve query performance and scalability, especially
+// for serverless or edge functions. Learn more: https://pris.ly/cli/accelerate-init
+
+// The `generator` block specifies the client to be generated. Here, the Prisma client 
+// will be generated for JavaScript/TypeScript usage.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// The `datasource` block defines the database connection details.
+// The provider is MySQL, and the connection URL is fetched from the environment variable.
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// The `User` model defines the `users` table structure in the database.
+// Each user has a username (primary key), password, name, and an optional token.
+// The `contacts` field establishes a one-to-many relationship with the `Contact` model.
+model User {
+  username String  @id @db.VarChar(100) // The primary key for the users table.
+  password String  @db.VarChar(100)    // Password field, limited to 100 characters.
+  name     String  @db.VarChar(100)    // User's name, limited to 100 characters.
+  token    String? @db.VarChar(100)    // Optional token for the user, limited to 100 characters.
+
+  contacts Contact[]                   // One-to-many relation to the `Contact` model.
+
+  @@map("users")                       // Maps this model to the `users` table in the database.
+}
+
+// The `Contact` model defines the `contacts` table structure.
+// Each contact has fields for names, email, phone, and a username to relate to a user.
+// A one-to-many relationship with the `Address` model is also defined.
+model Contact {
+  id         Int     @id @default(autoincrement()) // Primary key with auto-increment.
+  first_name String  @db.VarChar(100)             // Contact's first name, required.
+  last_name  String? @db.VarChar(100)             // Optional last name.
+  email      String? @db.VarChar(100)             // Optional email address.
+  phone      String? @db.VarChar(100)             // Optional phone number.
+  username   String  @db.VarChar(100)             // Relates this contact to a specific user.
+
+  user      User      @relation(fields: [username], references: [username]) // Foreign key relation to the User model.
+  addresses Address[] // One-to-many relation to the `Address` model.
+
+  @@map("contacts")  // Maps this model to the `contacts` table in the database.
+}
+
+// The `Address` model defines the `addresses` table structure.
+// It stores information about addresses related to a specific contact.
+model Address {
+  id          Int     @id @default(autoincrement()) // Primary key with auto-increment.
+  street      String? @db.VarChar(255)             // Optional street name.
+  city        String? @db.VarChar(100)             // Optional city name.
+  province    String? @db.VarChar(100)             // Optional province name.
+  country     String  @db.VarChar(100)             // Country name, required.
+  postal_code String  @db.VarChar(100)             // Postal code, required.
+  contact_id  Int                                // Foreign key linking to the `Contact` model.
+
+  contact Contact @relation(fields: [contact_id], references: [id]) // Foreign key relation to the Contact model.
+
+  @@map("addresses")  // Maps this model to the `addresses` table in the database.
+}
