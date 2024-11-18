@@ -7,7 +7,11 @@ import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 
 import { UserService } from './user.service'; // Importing the UserService to handle user-related business logic.
 import { WebResponse } from '../model/web.model'; // Importing WebResponse, a generic response model for consistent API responses.
-import { RegisterUserRequest, UserRespone } from '../model/user.model';
+import {
+  LoginUserRequest,
+  RegisterUserRequest,
+  UserRespone,
+} from '../model/user.model';
 // `RegisterUserRequest` defines the structure of the registration request.
 // `UserRespone` defines the structure of the response for user data.
 
@@ -36,6 +40,23 @@ export class UserController {
     // Returns the result wrapped in a WebResponse object.
     return {
       data: result, // The registration result, including user details.
+    };
+  }
+
+  // Defining an HTTP POST endpoint for user login.
+  @Post('/login') // Maps HTTP POST requests to the `/login` endpoint.
+  @HttpCode(200) // Sets the HTTP status code to 200 (OK) for successful responses.
+
+  // Handles user login requests.
+  async login(
+    @Body() request: LoginUserRequest, // Extracts the request body and maps it to the `LoginUserRequest` structure.
+  ): Promise<WebResponse<UserRespone>> {
+    // Calls the `login` method from the `UserService` to handle the login process.
+    const result = await this.userService.login(request);
+
+    // Wraps the result in a `WebResponse` object and returns it.
+    return {
+      data: result, // Contains the user data after successful login, including the generated token.
     };
   }
 }

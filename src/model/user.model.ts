@@ -21,3 +21,12 @@ export class UserRespone {
   // Optionally, a token that might be provided after successful user registration or login.
   token?: string;
 }
+
+// Class to represent the structure of a request when logging in a user.
+export class LoginUserRequest {
+  // The username provided by the user during login.
+  username: string;
+
+  // The password provided by the user during login.
+  password: string;
+}

@@ -3,10 +3,15 @@ import { HttpException, Inject, Injectable } from '@nestjs/common'; // NestJS de
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston'; // Winston module for logging.
 import { PrismaService } from '../common/prisma.service'; // Prisma service for database interaction.
 import { ValidationService } from '../common/validation.service'; // Validation service for data validation.
-import { RegisterUserRequest, UserRespone } from '../model/user.model'; // Models for user data.
+import {
+  LoginUserRequest,
+  RegisterUserRequest,
+  UserRespone,
+} from '../model/user.model'; // Models for user data.
 import { Logger } from 'winston'; // Winston logger for logging events.
 import { UserValidation } from './user.validation'; // User validation schema.
 import * as bcrypt from 'bcrypt'; // bcrypt for password hashing.
+import { v4 as uuid } from 'uuid'; // Library for generating unique tokens.
 
 @Injectable() // Marks this class as injectable in the NestJS context.
 export class UserService {
@@ -50,6 +55,58 @@ export class UserService {
     return {
       username: user.username,
       name: user.name,
+    };
+  }
+
+  // Method to handle user login.
+  async login(request: LoginUserRequest): Promise<UserRespone> {
+    // Log the incoming login request.
+    this.logger.info(`UserService.login(${JSON.stringify(request)})`);
+
+    // Validate the login request using the validation schema.
+    const loginRequest: LoginUserRequest = this.validationService.validate(
+      UserValidation.LOGIN,
+      request,
+    );
+
+    // Attempt to find a user with the provided username in the database.
+    let user = await this.prismaService.user.findUnique({
+      where: {
+        username: loginRequest.username,
+      },
+    });
+
+    // If the user does not exist, throw an HTTP exception with a 401 status code.
+    if (!user) {
+      throw new HttpException('Username or password is invalid', 401);
+    }
+
+    // Compare the provided password with the stored hashed password.
+    const isPasswordValid = await bcrypt.compare(
+      loginRequest.password,
+      user.password,
+    );
+
+    // If the password is invalid, throw an HTTP exception with a 401 status code.
+    if (!isPasswordValid) {
+      throw new HttpException('Username or password is invalid', 401);
+    }
+
+    // Generate a new token for the user and update their record in the database.
+    user = await this.prismaService.user.update({
+      where: {
+        username: loginRequest.username,
+      },
+      data: {
+        token: uuid(), // Generate a unique token using UUID.
+      },
+    });
+
+    // Return the user's username, name, and the newly generated token.
+    return {
+      username: user.username,
+      name: user.name,
+      token: user.token,
     };
   }
 }

@@ -34,7 +34,7 @@ describe('UserController', () => {
   describe('POST /api/users', () => {
     // Deletes all users in the database before each test.
     beforeEach(async () => {
-      testService.deleteUser(); // Clears the user data for a clean test environment.
+      await testService.deleteUser(); // Clears the user data for a clean test environment.
     });
 
     // Test case: Should reject invalid user registration requests.
@@ -102,6 +102,57 @@ describe('UserController', () => {
 
       // Asserts that the response body contains validation errors for the conflict.
       expect(response.body.errors).toBeDefined();
+    });
+  });
+
+  // Nested test suite for the `POST /api/users/login` endpoint.
+  describe('POST /api/users/login', () => {
+    // Prepare test data: Clear users and create a test user before each test.
+    beforeEach(async () => {
+      await testService.deleteUser(); // Clears existing user data.
+      await testService.createUser(); // Creates a test user for login scenarios.
+    });
+
+    // Test case: Invalid login requests should be rejected.
+    it('should be rejected if request is invalid', async () => {
+      // Send an HTTP POST request with invalid data for user login.
+      const response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: '', // Invalid username.
+          password: '', // Invalid password.
+        });
+
+      // Log the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Expect the response status to be 400 (Bad Request).
+      expect(response.status).toBe(400);
+
+      // Expect the response to contain validation errors.
+      expect(response.body.errors).toBeDefined();
+    });
+
+    // Test case: Valid login requests should succeed.
+    it('should be able to login', async () => {
+      // Send an HTTP POST request with valid login credentials.
+      const response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test', // Valid username.
+          password: 'test', // Valid password.
+        });
+
+      // Log the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Expect the response status to be 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Expect the response data to match the logged-in user information and contain a token.
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test');
+      expect(response.body.data.token).toBeDefined(); // Ensure a token is returned.
     });
   });
 });
