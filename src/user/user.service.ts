@@ -12,6 +12,7 @@ import { Logger } from 'winston'; // Winston logger for logging events.
 import { UserValidation } from './user.validation'; // User validation schema.
 import * as bcrypt from 'bcrypt'; // bcrypt for password hashing.
 import { v4 as uuid } from 'uuid'; // Library for generating unique tokens.
+import { User } from '@prisma/client'; // Prisma's User model type.
 
 @Injectable() // Marks this class as injectable in the NestJS context.
 export class UserService {
@@ -107,6 +108,15 @@ export class UserService {
       username: user.username,
       name: user.name,
       token: user.token,
+    };
+  }
+
+  // Method to retrieve user details.
+  async get(user: User): Promise<UserRespone> {
+    // Returning the user's username and name as a response.
+    return {
+      username: user.username,
+      name: user.name,
     };
   }
 }

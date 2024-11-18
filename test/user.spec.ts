@@ -155,4 +155,51 @@ describe('UserController', () => {
       expect(response.body.data.token).toBeDefined(); // Ensure a token is returned.
     });
   });
+
+  // Describe block for testing the GET /api/users/current endpoint.
+  describe('GET /api/users/current', () => {
+    // beforeEach block that runs before each test case.
+    // It prepares the test environment by deleting and creating a user.
+    beforeEach(async () => {
+      // Deleting any existing user with username 'test' before each test.
+      await testService.deleteUser();
+      // Creating a new user with username 'test' before each test.
+      await testService.createUser();
+    });
+
+    // Test case to check if the request is rejected when the token is invalid.
+    it('should be rejected if token is invalid', async () => {
+      // Sending a GET request to the /api/users/current endpoint with an invalid token.
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current') // The route being tested.
+        .set('Authorization', 'wrong'); // Setting the invalid token in the Authorization header.
+
+      // Logging the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserting that the response status code should be 401 (Unauthorized).
+      expect(response.status).toBe(401);
+
+      // Asserting that the response body contains an 'errors' field.
+      expect(response.body.errors).toBeDefined();
+    });
+
+    // Test case to check if the request is successful and returns the user data.
+    it('should be able to get user', async () => {
+      // Sending a GET request to the /api/users/current endpoint with a valid token.
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current') // The route being tested.
+        .set('Authorization', 'test'); // Setting the valid token 'test' in the Authorization header.
+
+      // Logging the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserting that the response status code should be 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Asserting that the response body contains the expected user data.
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test');
+    });
+  });
 });

@@ -26,6 +26,7 @@ export class TestService {
         name: 'test', // The name for the new user.
         // Using bcrypt to hash the password before saving it to the database.
         password: await bcrypt.hash('test', 10), // Hashing the password 'test' with a salt rounds of 10.
+        token: 'test', // Setting a test token for the user.
       },
     });
   }
