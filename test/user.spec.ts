@@ -295,4 +295,51 @@ describe('UserController', () => {
       expect(response.body.data.token).toBeDefined();
     });
   });
+
+  // Test suite for DELETE endpoint `/api/users/current`.
+  describe('DELETE /api/users/current', () => {
+    // Before each test, delete any existing test user and create a fresh test user.
+    beforeEach(async () => {
+      await testService.deleteUser(); // Deletes any user with the username 'test' from the database.
+      await testService.createUser(); // Creates a new user with predefined test data.
+    });
+
+    // Test case: Invalid token should reject the request.
+    it('should be rejected if token is invalid', async () => {
+      // Send a DELETE request with an invalid token.
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current') // Target the DELETE endpoint.
+        .set('Authorization', 'wrong'); // Set an invalid token in the Authorization header.
+
+      logger.info(response.body); // Log the response body for debugging purposes.
+
+      // Assert that the response status code is 401 (Unauthorized).
+      expect(response.status).toBe(401);
+
+      // Assert that the response body contains errors.
+      expect(response.body.errors).toBeDefined();
+    });
+
+    // Test case: Valid token should allow user logout.
+    it('should be able to logout user', async () => {
+      // Send a DELETE request with a valid token.
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current') // Target the DELETE endpoint.
+        .set('Authorization', 'test'); // Set a valid token in the Authorization header.
+
+      logger.info(response.body); // Log the response body for debugging purposes.
+
+      // Assert that the response status code is 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Assert that the response body contains `data: true`, indicating successful logout.
+      expect(response.body.data).toBe(true);
+
+      // Retrieve the user data from the database to verify logout.
+      const user = await testService.getUser();
+
+      // Assert that the user's token in the database is null, confirming the logout process.
+      expect(user.token).toBeNull();
+    });
+  });
 });

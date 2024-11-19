@@ -1,10 +1,21 @@
 // Importing necessary decorators and modules from NestJS.
-import { Body, Controller, Get, HttpCode, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+} from '@nestjs/common';
 // `Body` is used to extract the body of a request.
 // `Controller` is used to define the controller class.
+// `Delete` is used to Handles HTTP DELETE requests to a specified route.
 // `HttpCode` is used to set the HTTP status code for a route.
-// `Post` is used to handle HTTP POST requests.
+// `Get` is used to Handles HTTP GET requests to a specified route.
+// `HttpCode` is used to Sets the HTTP status code for the response.
 // `Patch` is used to handle HTTP PATCH requests.
+// `Post` is used to handle HTTP POST requests.
 
 import { UserService } from './user.service'; // Importing the UserService to handle user-related business logic.
 import { WebResponse } from '../model/web.model'; // Importing WebResponse, a generic response model for consistent API responses.
@@ -92,6 +103,21 @@ export class UserController {
     // Wraps the result in a `WebResponse` object for a consistent API response.
     return {
       data: result, // Contains the updated user's details.
+    };
+  }
+
+  // Defining a DELETE route to log out the authenticated user.
+  @Delete('/current') // Maps HTTP DELETE requests to the `/current` endpoint.
+  @HttpCode(200) // Sets the HTTP response status code to 200 (OK).
+
+  // Logs out the authenticated user by clearing their authentication token.
+  async logout(@Auth() user: User): Promise<WebResponse<boolean>> {
+    // Calls the `logout` method of `UserService` to handle the logout logic.
+    await this.userService.logout(user);
+
+    // Returns a success response wrapped in a `WebResponse` object.
+    return {
+      data: true, // Indicates the logout was successful.
     };
   }
 }

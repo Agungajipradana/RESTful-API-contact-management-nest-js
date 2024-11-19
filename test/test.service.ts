@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common'; // `Injectable` decorator marks the class as a service that can be injected.
 import * as bcrypt from 'bcrypt'; // Importing bcrypt for password hashing.
 import { PrismaService } from '../src/common/prisma.service'; // Importing PrismaService for database operations.
+import { User } from '@prisma/client'; // Prisma's User model representing the database entity.
 
 // The `TestService` is responsible for performing test-specific operations like user creation and deletion.
 @Injectable()
@@ -14,6 +15,16 @@ export class TestService {
     await this.prismaService.user.deleteMany({
       where: {
         username: 'test', // Specifies the condition for deleting users.
+      },
+    });
+  }
+
+  // Method to retrieve a user with the username 'test' from the database.
+  async getUser(): Promise<User> {
+    // Finds a unique user record in the database based on the provided condition.
+    return await this.prismaService.user.findUnique({
+      where: {
+        username: 'test', // Specifies the condition for retrieving the user.
       },
     });
   }

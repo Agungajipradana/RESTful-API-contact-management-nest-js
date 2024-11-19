@@ -158,4 +158,25 @@ export class UserService {
       username: result.username,
     };
   }
+
+  // Asynchronous method to handle user logout.
+  async logout(user: User): Promise<UserRespone> {
+    // Updates the user's record in the database, setting the `token` field to null.
+    // This effectively invalidates the user's authentication token, logging them out.
+    const result = await this.prismaService.user.update({
+      where: {
+        username: user.username, // Specifies the user to update by their username.
+      },
+      data: {
+        token: null, // Clears the token field to log the user out.
+      },
+    });
+
+    // Returns a response object containing the user's username and name.
+    // This response confirms the logout action and ensures the user's details remain available for feedback.
+    return {
+      username: result.username, // The user's username.
+      name: result.name, // The user's name.
+    };
+  }
 }
