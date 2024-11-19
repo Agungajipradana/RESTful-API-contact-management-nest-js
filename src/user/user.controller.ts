@@ -1,15 +1,17 @@
 // Importing necessary decorators and modules from NestJS.
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post } from '@nestjs/common';
 // `Body` is used to extract the body of a request.
 // `Controller` is used to define the controller class.
 // `HttpCode` is used to set the HTTP status code for a route.
 // `Post` is used to handle HTTP POST requests.
+// `Patch` is used to handle HTTP PATCH requests.
 
 import { UserService } from './user.service'; // Importing the UserService to handle user-related business logic.
 import { WebResponse } from '../model/web.model'; // Importing WebResponse, a generic response model for consistent API responses.
 import {
   LoginUserRequest, // Model defining the structure of the login request.
-  RegisterUserRequest, // Model defining the structure of the registration request.
+  RegisterUserRequest,
+  UpdateUserRequest, // Model defining the structure of the registration request.
   UserRespone, // Model defining the structure of the response containing user data.
 } from '../model/user.model';
 import { Auth } from '../common/auth.decorator'; // Custom decorator for extracting authenticated user information.
@@ -72,6 +74,24 @@ export class UserController {
     // Wraps the result in a WebResponse object and returns it.
     return {
       data: result, // Contains the authenticated user's details.
+    };
+  }
+
+  // Defining a PATCH route to update the authenticated user's details.
+  @Patch('/current') // Maps HTTP PATCH requests to the `/current` endpoint.
+  @HttpCode(200) // Sets the HTTP response status code to 200 (OK).
+
+  // Handles updates to the authenticated user's details.
+  async update(
+    @Auth() user: User, // Extracts the authenticated user using the custom `Auth` decorator.
+    @Body() request: UpdateUserRequest, // Extracts and maps the request body to `UpdateUserRequest`.
+  ): Promise<WebResponse<UserRespone>> {
+    // Calls the `update` method of `UserService` to process the update logic.
+    const result = await this.userService.update(user, request);
+
+    // Wraps the result in a `WebResponse` object for a consistent API response.
+    return {
+      data: result, // Contains the updated user's details.
     };
   }
 }

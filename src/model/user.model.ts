@@ -30,3 +30,12 @@ export class LoginUserRequest {
   // The password provided by the user during login.
   password: string;
 }
+
+// Class to represent the structure of a request when updating a user's information.
+export class UpdateUserRequest {
+  // The updated full name of the user (optional).
+  name?: string;
+
+  // The updated password of the user (optional).
+  password?: string;
+}

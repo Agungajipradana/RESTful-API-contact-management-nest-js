@@ -202,4 +202,97 @@ describe('UserController', () => {
       expect(response.body.data.name).toBe('test');
     });
   });
+
+  // Describes the test suite for the PATCH /api/users/current endpoint.
+  describe('PATCH /api/users/current', () => {
+    // Runs before each test to ensure a clean environment by deleting and recreating a test user.
+    beforeEach(async () => {
+      await testService.deleteUser(); // Deletes any existing test user.
+      await testService.createUser(); // Creates a new test user for testing.
+    });
+
+    // Test case: Verifies that an invalid request is rejected.
+    it('should be rejected if request is invalid', async () => {
+      // Sends a PATCH request with an invalid payload (empty strings for `password` and `name`).
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current') // Specifies the endpoint to test.
+        .set('Authorization', 'test') // Sets the authorization header for authentication.
+        .send({
+          password: '', // Invalid: Empty string for password.
+          name: '', // Invalid: Empty string for name.
+        });
+
+      // Logs the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserts that the HTTP status code is 400 (Bad Request).
+      expect(response.status).toBe(400);
+
+      // Asserts that the response contains validation error details.
+      expect(response.body.errors).toBeDefined();
+    });
+
+    // Test case: Verifies that the name can be successfully updated.
+    it('should be able to update name', async () => {
+      // Sends a PATCH request with a valid payload to update the user's name.
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current') // Specifies the endpoint to test.
+        .set('Authorization', 'test') // Sets the authorization header for authentication.
+        .send({
+          name: 'test updated', // Valid: Updates the name field.
+        });
+
+      // Logs the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserts that the HTTP status code is 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Asserts that the username remains unchanged in the response.
+      expect(response.body.data.username).toBe('test');
+
+      // Asserts that the name is updated correctly in the response.
+      expect(response.body.data.name).toBe('test updated');
+    });
+
+    // Test case: Verifies that the password can be successfully updated.
+    it('should be able to update password', async () => {
+      // Sends a PATCH request with a valid payload to update the user's password.
+      let response = await request(app.getHttpServer())
+        .patch('/api/users/current') // Specifies the endpoint to test.
+        .set('Authorization', 'test') // Sets the authorization header for authentication.
+        .send({
+          password: 'updated', // Valid: Updates the password field.
+        });
+
+      // Logs the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserts that the HTTP status code is 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Asserts that the username remains unchanged in the response.
+      expect(response.body.data.username).toBe('test');
+
+      // Asserts that the name remains unchanged in the response.
+      expect(response.body.data.name).toBe('test');
+
+      // Sends a POST request to login with the updated password.
+      response = await request(app.getHttpServer())
+        .post('/api/users/login') // Specifies the login endpoint.
+        .send({
+          username: 'test', // Uses the test user's username.
+          password: 'updated', // Uses the updated password for login.
+        });
+
+      // Logs the response body for debugging purposes.
+      logger.info(response.body);
+
+      // Asserts that the HTTP status code is 200 (OK).
+      expect(response.status).toBe(200);
+
+      // Asserts that a token is included in the response, indicating successful login.
+      expect(response.body.data.token).toBeDefined();
+    });
+  });
 });

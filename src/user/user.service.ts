@@ -6,6 +6,7 @@ import { ValidationService } from '../common/validation.service'; // Validation 
 import {
   LoginUserRequest,
   RegisterUserRequest,
+  UpdateUserRequest,
   UserRespone,
 } from '../model/user.model'; // Models for user data.
 import { Logger } from 'winston'; // Winston logger for logging events.
@@ -26,7 +27,7 @@ export class UserService {
   // Method to register a new user.
   async register(request: RegisterUserRequest): Promise<UserRespone> {
     // Log the incoming request to register a new user.
-    this.logger.info(`Register new user ${JSON.stringify(request)}`);
+    this.logger.debug(`Register new user ${JSON.stringify(request)}`);
 
     // Validate the incoming request using predefined validation schema.
     const registerRequest: RegisterUserRequest =
@@ -62,7 +63,7 @@ export class UserService {
   // Method to handle user login.
   async login(request: LoginUserRequest): Promise<UserRespone> {
     // Log the incoming login request.
-    this.logger.info(`UserService.login(${JSON.stringify(request)})`);
+    this.logger.debug(`UserService.login(${JSON.stringify(request)})`);
 
     // Validate the login request using the validation schema.
     const loginRequest: LoginUserRequest = this.validationService.validate(
@@ -117,6 +118,44 @@ export class UserService {
     return {
       username: user.username,
       name: user.name,
+    };
+  }
+
+  // Method to update user details.
+  async update(user: User, request: UpdateUserRequest): Promise<UserRespone> {
+    // Log the incoming update request.
+    this.logger.debug(
+      `UserService.update(${JSON.stringify(user)}, ${JSON.stringify(request)})`,
+    );
+
+    // Validate the update request using the validation schema.
+    const updateRequest: UpdateUserRequest = this.validationService.validate(
+      UserValidation.UPDATE,
+      request,
+    );
+
+    // If the update request contains a new name, update the user's name.
+    if (updateRequest.name) {
+      user.name = updateRequest.name;
+    }
+
+    // If the update request contains a new password, hash it before saving.
+    if (updateRequest.password) {
+      user.password = await bcrypt.hash(updateRequest.password, 10);
+    }
+
+    // Update the user record in the database with the new data.
+    const result = await this.prismaService.user.update({
+      where: {
+        username: user.username,
+      },
+      data: user,
+    });
+
+    // Return the updated user's username and name.
+    return {
+      name: result.name,
+      username: result.username,
     };
   }
 }

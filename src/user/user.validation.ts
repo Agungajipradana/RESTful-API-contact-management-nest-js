@@ -22,4 +22,13 @@ export class UserValidation {
     // Validation for the 'password' field: must be a string between 1 and 100 characters.
     password: z.string().min(1).max(100),
   });
+
+  // Static property that holds the validation schema for updating user data.
+  static readonly UPDATE: ZodType = z.object({
+    // Validation for the 'name' field: optional field that, if provided, must be a string between 1 and 100 characters.
+    name: z.string().min(1).max(100).optional(),
+
+    // Validation for the 'password' field: optional field that, if provided, must be a string between 1 and 100 characters.
+    password: z.string().min(1).max(100).optional(),
+  });
 }
