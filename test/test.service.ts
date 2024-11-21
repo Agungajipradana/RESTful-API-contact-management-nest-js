@@ -19,6 +19,15 @@ export class TestService {
     });
   }
 
+  // Deletes all contacts associated with the username 'test'.
+  async deleteContact() {
+    await this.prismaService.contact.deleteMany({
+      where: {
+        username: 'test', // Specifies the condition: delete contacts associated with 'test'.
+      },
+    });
+  }
+
   // Method to retrieve a user with the username 'test' from the database.
   async getUser(): Promise<User> {
     // Finds a unique user record in the database based on the provided condition.
