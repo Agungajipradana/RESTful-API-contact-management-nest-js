@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common'; // `Injectable` decorator marks the class as a service that can be injected.
 import * as bcrypt from 'bcrypt'; // Importing bcrypt for password hashing.
 import { PrismaService } from '../src/common/prisma.service'; // Importing PrismaService for database operations.
-import { User } from '@prisma/client'; // Prisma's User model representing the database entity.
+import { Contact, User } from '@prisma/client'; // Prisma's User model representing the database entity.
 
 // The `TestService` is responsible for performing test-specific operations like user creation and deletion.
 @Injectable()
@@ -47,6 +47,36 @@ export class TestService {
         // Using bcrypt to hash the password before saving it to the database.
         password: await bcrypt.hash('test', 10), // Hashing the password 'test' with a salt rounds of 10.
         token: 'test', // Setting a test token for the user.
+      },
+    });
+  }
+
+  /**
+   * Retrieves the first contact associated with the username 'test'.
+   *
+   * @returns A Promise resolving to the `Contact` object or `null` if no contact is found.
+   */
+  async getContact(): Promise<Contact> {
+    return this.prismaService.contact.findFirst({
+      where: {
+        username: 'test', // Retrieves the first contact linked to the username 'test'.
+      },
+    });
+  }
+
+  /**
+   * Creates a new contact associated with the username 'test'.
+   *
+   * This method adds a contact with predefined values for testing purposes.
+   */
+  async createContact() {
+    await this.prismaService.contact.create({
+      data: {
+        first_name: 'test', // The first name of the test contact.
+        last_name: 'test', // The last name of the test contact.
+        email: 'test@example.com', // The email address of the test contact.
+        phone: '012345678', // The phone number of the test contact.
+        username: 'test', // Links the contact to the username 'test'.
       },
     });
   }
