@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -84,6 +85,22 @@ export class ContactController {
     // Returns a structured response containing the updated contact details.
     return {
       data: result, // The result of the update operation.
+    };
+  }
+
+  // Endpoint to handle the removal of a contact by contact ID.
+  @Delete('/:contactId') // HTTP DELETE method to delete a contact based on the contactId parameter.
+  @HttpCode(200) // Sets the HTTP status code to 200 OK for a successful request.
+  async remove(
+    @Auth() user: User, // The authenticated user making the request.
+    @Param('contactId', ParseIntPipe) contactId: number, // The contact ID to be deleted, parsed to a number.
+  ): Promise<WebResponse<boolean>> {
+    // Calls the remove method from the ContactService to delete the contact.
+    await this.contactService.remove(user, contactId);
+
+    // Returns a response indicating the success of the deletion operation.
+    return {
+      data: true, // Indicates that the contact was successfully deleted.
     };
   }
 }

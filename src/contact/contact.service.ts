@@ -149,4 +149,21 @@ export class ContactService {
     // Converts the updated contact entity into a structured response and returns it.
     return this.toContactResponse(contact);
   }
+
+  // Method to remove a contact from the database.
+  async remove(user: User, contactId: number): Promise<ContactResponse> {
+    // Verifies that the contact exists and belongs to the authenticated user.
+    this.checkContactMustExists(user.username, contactId);
+
+    // Deletes the contact from the database using Prisma, based on the provided contact ID and username.
+    const contact = await this.prismaService.contact.delete({
+      where: {
+        id: contactId, // The unique ID of the contact to be deleted.
+        username: user.username, // Ensures that the contact belongs to the authenticated user.
+      },
+    });
+
+    // Converts the deleted contact into a structured response and returns it.
+    return this.toContactResponse(contact);
+  }
 }
